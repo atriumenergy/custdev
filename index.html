@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atrium — cash-flow dashboard (wireframe)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/tabler-icons.min.css">
+<style>
+  :root{
+    --surface-2:#ffffff;--surface-1:#f1f1ee;--surface-0:#fbfbf9;
+    --text-primary:#2b2b28;--text-secondary:#6c6c66;--text-muted:#9a9a92;
+    --border:#c4c4be;--border-strong:#9d9d96;
+    --text-success:#2b2b28;--bg-success:#eeeeea;
+    --text-accent:#2b2b28;--bg-accent:#ececE8;--border-accent:#9d9d96;
+    --text-warning:#6c6c66;--radius:6px;
+    --font:'Architects Daughter',ui-rounded,'Comic Sans MS',cursive;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface-0);color:var(--text-primary);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 18px 60px}
+  h1{font-weight:400;margin:0}
+  .banner{display:flex;align-items:center;gap:8px;border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:8px 12px;color:var(--text-secondary);font-size:14px;margin-bottom:22px}
+  .cf-sq{background:var(--surface-1);border:1.5px solid var(--border-strong);border-radius:10px;padding:16px;cursor:pointer;transition:transform .12s;text-align:left;width:100%;font:inherit;color:inherit}
+  .cf-sq:hover{transform:translateY(-1px);border-color:var(--text-secondary)}
+  .cf-sq:disabled{cursor:default;opacity:.6}
+  .cf-amt{font-weight:400}
+  .cf-pill{border:1.5px solid var(--border-strong);background:var(--surface-2);border-radius:99px;padding:5px 12px;cursor:pointer;font:inherit;font-size:14px;color:var(--text-secondary)}
+  .cf-pill[aria-pressed="true"]{background:var(--bg-accent);color:var(--text-primary);border-color:var(--text-secondary)}
+  .cf-fade{animation:cfOut .35s forwards}
+  @keyframes cfOut{to{opacity:0;transform:scale(.96);height:0;margin:0;padding:0;border-width:0}}
+  a{color:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="banner"><i class="ti ti-pencil" aria-hidden="true"></i> Wireframe · concept for feedback — structure and idea only, not the final visual design</div>
+<div id="cfapp">Loading…</div>
+</div>
+<script>
+(function(){
+  var app=document.getElementById('cfapp');
+  var DATA={
+    portfolio:"Coastline Hospitality Group",
+    prospects:[
+      {id:'p1',name:'Summit Ridge Suites',cf:180000,ready:true,step:'Proposal ready'},
+      {id:'p2',name:'Harbor Point Hotel',cf:140000,ready:true,step:'Proposal ready'},
+      {id:'p3',name:'Grandview Hotel',cf:110000,ready:false,step:'Complete your audit',est:true},
+      {id:'p4',name:'Old Town Motel',cf:90000,ready:false,step:'Complete your audit',est:true},
+      {id:'p5',name:'Pinewood Inn',cf:70000,ready:false,step:'Add your utility bills',est:true},
+      {id:'p6',name:'Bayside Motor Lodge',cf:60000,ready:false,step:'Add your utility bills',est:true}
+    ],
+    solutions:[
+      {id:'s1',prop:'Marina Bay Inn',type:'Solar + Batteries',cf:130000,u:0,note:'Rebate ends Aug 31'},
+      {id:'s5',prop:'Cedar Court Hotel',type:'Solar + Batteries',cf:90000,u:0,note:'Rebate ends Aug 31'},
+      {id:'s8',prop:'Riverside Lodge',type:'Heat Pump Water Heaters',cf:27000,u:0},
+      {id:'s2',prop:'Marina Bay Inn',type:'Heat Pump Water Heaters',cf:38000,u:1},
+      {id:'s9',prop:'Riverside Lodge',type:'Smart Thermostats',cf:44000,u:1},
+      {id:'s6',prop:'Cedar Court Hotel',type:'LED Lighting',cf:34000,u:1},
+      {id:'s7',prop:'Cedar Court Hotel',type:'Ozone Laundry',cf:26000,u:1},
+      {id:'s3',prop:'Marina Bay Inn',type:'LED Lighting',cf:26000,u:2},
+      {id:'s4',prop:'Marina Bay Inn',type:'Smart Thermostats',cf:16000,u:2}
+    ]
+  };
+  var S={screen:'home',bucket:2,solView:'type',param:null,signed:{},approved:{},unlocked:0};
+  var UL=['Now','Soon','Later'];
+  function fmtK(n){n=Math.round(n);if(n>=1e6)return '$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e3)return '$'+Math.round(n/1e3)+'K';return '$'+n;}
+  function fmt(n){return '$'+Math.round(n).toLocaleString();}
+  function prospects(){return DATA.prospects.filter(function(p){return !S.signed[p.id];});}
+  function sols(){return DATA.solutions.filter(function(s){return !S.approved[s.id];});}
+  function sum(a){return a.reduce(function(t,x){return t+x.cf;},0);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+  function homeSquare(icon,label,sub,foot,amt,act,val){
+    return '<button class="cf-sq" data-act="'+act+'" data-val="'+(val||'')+'" style="display:flex;flex-direction:column;gap:6px;min-height:150px">'
+      +'<span style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:14px"><i class="ti '+icon+'" aria-hidden="true" style="font-size:18px"></i>'+label+'</span>'
+      +'<span class="cf-amt" style="font-size:30px;line-height:1.1">'+amt+'</span>'
+      +'<span style="font-size:14px">'+sub+'</span>'
+      +'<span style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;color:var(--text-muted);font-size:13px">'+foot+'<i class="ti ti-arrow-right" aria-hidden="true"></i></span></button>';
+  }
+  function unlockedBanner(){
+    if(!S.unlocked)return '';
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-success);border:1.5px solid var(--border-strong);border-radius:var(--radius);padding:8px 12px;margin-bottom:1rem;font-size:14px"><i class="ti ti-sparkles" aria-hidden="true"></i>Unlocked this session: <span style="font-weight:400">'+fmt(S.unlocked)+'</span> over 5 years</div>';
+  }
+  function bucketPills(){
+    var opts=[[1,'All prospective'],[2,'Land & expand'],[3,'All signed']];
+    return '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem">'
+      +'<span style="font-size:13px;color:var(--text-muted);align-self:center;margin-right:2px">Preview portfolio:</span>'
+      +opts.map(function(o){return '<button class="cf-pill" data-act="bucket" data-val="'+o[0]+'" aria-pressed="'+(S.bucket===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
+  }
+  function header(title,sub){
+    return '<div style="margin-bottom:1.25rem"><button class="cf-pill" data-act="back" style="margin-bottom:12px"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>'
+      +'<h1 style="margin:0">'+title+'</h1>'+(sub?'<p style="color:var(--text-secondary);margin:.25rem 0 0">'+sub+'</p>':'')+'</div>';
+  }
+  function renderHome(){
+    var showSign=S.bucket!==3, showApprove=S.bucket!==1;
+    var st=sum(prospects()), at=sum(sols());
+    var total=(showSign?st:0)+(showApprove?at:0);
+    var sq=[];
+    if(showSign) sq.push(prospects().length?homeSquare('ti-building-community','Sign up your properties',prospects().length+' properties ready','5-year new cash flow',fmtK(st),'go','signup')
+      :'<div class="cf-sq" style="display:flex;flex-direction:column;gap:6px;min-height:150px"><span style="color:var(--text-secondary);font-size:14px">Sign up your properties</span><span style="font-size:20px"><i class="ti ti-check" aria-hidden="true"></i> All signed up</span></div>');
+    if(showApprove) sq.push(sols().length?homeSquare('ti-bolt','Approve proposed solutions',sols().length+' solutions to review','5-year new cash flow',fmtK(at),'go','solutions')
+      :'<div class="cf-sq" style="display:flex;flex-direction:column;gap:6px;min-height:150px"><span style="color:var(--text-secondary);font-size:14px">Approve proposed solutions</span><span style="font-size:20px"><i class="ti ti-check" aria-hidden="true"></i> All approved</span></div>');
+    sq.push('<button class="cf-sq" disabled style="display:flex;flex-direction:column;gap:6px;min-height:150px;border-style:dashed"><span style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:14px"><i class="ti ti-gift" aria-hidden="true" style="font-size:18px"></i>Refer a property</span><span style="color:var(--text-muted);font-size:20px">Earn bill credits</span><span style="font-size:14px;color:var(--text-secondary)">A month of bills per referral</span><span style="margin-top:auto;color:var(--text-muted);font-size:13px">Coming soon</span></button>');
+    app.innerHTML=bucketPills()
+      +'<div style="margin-bottom:1.5rem"><p style="color:var(--text-secondary);margin:0;font-size:14px">'+esc(DATA.portfolio)+'</p>'
+      +'<h1 style="margin:.15rem 0 0">Unlock <span class="cf-amt">'+fmtK(total)+'</span> in new cash flow</h1>'
+      +'<p style="color:var(--text-muted);margin:.25rem 0 0;font-size:13px">Estimated net, over 5 years. Each step below unlocks part of it.</p></div>'
+      +unlockedBanner()
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">'+sq.join('')+'</div>';
+  }
+  function propRow(p){
+    var cta=p.ready?'<button class="cf-pill" data-act="sign" data-val="'+p.id+'">Approve &amp; sign</button>'
+      :'<button class="cf-pill" data-act="step" data-val="'+p.id+'">'+p.step+'</button>';
+    return '<div data-row="'+p.id+'" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1.5px '+(p.est?'dashed':'solid')+' var(--border-strong);border-radius:10px;padding:14px 16px">'
+      +'<div style="min-width:0"><p style="margin:0">'+esc(p.name)+'</p>'
+      +'<p style="margin:.15rem 0 0;font-size:13px;color:var(--text-muted)">'+(p.est?'Estimated · '+p.step:p.step)+'</p></div>'
+      +'<div style="text-align:right;flex-shrink:0"><div class="cf-amt" style="font-size:18px">'+fmtK(p.cf)+'</div><div style="margin-top:6px">'+cta+'</div></div></div>';
+  }
+  function renderSignup(){
+    var list=prospects();
+    app.innerHTML=header('Sign up your properties','Each property’s 5-year new cash flow once it’s saving with Atrium.')+unlockedBanner()
+      +(list.length?'<div style="display:flex;flex-direction:column;gap:10px">'+list.map(propRow).join('')+'</div>'
+        :'<div class="cf-sq" style="text-align:center;padding:2rem"><i class="ti ti-check" style="font-size:24px" aria-hidden="true"></i><p style="margin:.5rem 0 0">Every property is signed up.</p></div>');
+  }
+  function recSort(a,b){ if(a.u!==b.u)return a.u-b.u; if((!!b.note)!==(!!a.note))return (b.note?1:0)-(a.note?1:0); return b.cf-a.cf; }
+  function renderSolutions(){
+    var live=sols();
+    var groups={};
+    live.forEach(function(s){var k=S.solView==='type'?s.type:s.prop;(groups[k]=groups[k]||[]).push(s);});
+    var keys=Object.keys(groups).sort(function(a,b){
+      if(S.solView==='type'){var ga=groups[a].slice().sort(recSort)[0],gb=groups[b].slice().sort(recSort)[0];var r=recSort(ga,gb);if(r)return r;}
+      return sum(groups[b])-sum(groups[a]);
+    });
+    var toggle='<div style="display:flex;gap:6px;margin-bottom:1rem">'
+      +'<button class="cf-pill" data-act="solview" data-val="type" aria-pressed="'+(S.solView==='type')+'">By solution type</button>'
+      +'<button class="cf-pill" data-act="solview" data-val="property" aria-pressed="'+(S.solView==='property')+'">By property</button></div>';
+    var grid=keys.map(function(k){
+      var g=groups[k], soonest=g.slice().sort(recSort)[0];
+      var tag=soonest.note?'<span style="display:inline-flex;align-items:center;gap:4px;color:var(--text-warning);font-size:13px"><i class="ti ti-clock" aria-hidden="true"></i>'+esc(soonest.note)+'</span>'
+        :'<span style="color:var(--text-muted);font-size:13px">'+UL[soonest.u]+' · '+g.length+' solution'+(g.length>1?'s':'')+'</span>';
+      return '<button class="cf-sq" data-act="leaf" data-val="'+esc(k)+'" style="display:flex;flex-direction:column;gap:6px;min-height:120px">'
+        +'<span style="font-size:15px">'+esc(k)+'</span>'
+        +'<span class="cf-amt" style="font-size:22px">'+fmtK(sum(g))+'</span>'
+        +'<span style="margin-top:auto;display:flex;justify-content:space-between;align-items:center">'+tag+'<i class="ti ti-arrow-right" style="color:var(--text-muted)" aria-hidden="true"></i></span></button>';
+    }).join('');
+    app.innerHTML=header('Approve proposed solutions','Sorted by what pays back soonest and biggest.')+unlockedBanner()+toggle
+      +(keys.length?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">'+grid+'</div>'
+        :'<div class="cf-sq" style="text-align:center;padding:2rem"><i class="ti ti-check" style="font-size:24px" aria-hidden="true"></i><p style="margin:.5rem 0 0">Every proposed solution is approved.</p></div>');
+  }
+  function renderLeaf(){
+    var live=sols().filter(function(s){return (S.solView==='type'?s.type:s.prop)===S.param;});
+    var rows=live.sort(recSort).map(function(s){
+      var meta=S.solView==='type'?esc(s.prop):esc(s.type);
+      var tag=s.note?'<span style="color:var(--text-warning)"><i class="ti ti-clock" aria-hidden="true"></i> '+esc(s.note)+'</span>':UL[s.u];
+      return '<div data-row="'+s.id+'" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1.5px solid var(--border-strong);border-radius:10px;padding:14px 16px">'
+        +'<div style="min-width:0"><p style="margin:0">'+meta+'</p><p style="margin:.15rem 0 0;font-size:13px;color:var(--text-muted)">'+tag+'</p></div>'
+        +'<div style="text-align:right;flex-shrink:0"><div class="cf-amt" style="font-size:18px">'+fmtK(s.cf)+'</div>'
+        +'<button class="cf-pill" data-act="approve" data-val="'+s.id+'" style="margin-top:6px">Approve</button></div></div>';
+    }).join('');
+    app.innerHTML=header(esc(S.param),'5-year new cash flow per solution.')+unlockedBanner()
+      +(live.length?'<div style="display:flex;flex-direction:column;gap:10px">'+rows+'</div>':'<p style="color:var(--text-secondary)">All approved here.</p>');
+  }
+  function render(){
+    if(S.screen==='home')renderHome();
+    else if(S.screen==='signup')renderSignup();
+    else if(S.screen==='solutions')renderSolutions();
+    else if(S.screen==='leaf')renderLeaf();
+  }
+  function unlockRow(id,cf,then){
+    var row=app.querySelector('[data-row="'+id+'"]');
+    S.unlocked+=cf;
+    if(row){row.classList.add('cf-fade');setTimeout(then,340);}else then();
+  }
+  app.addEventListener('click',function(e){
+    var el=e.target.closest('[data-act]'); if(!el)return;
+    var a=el.dataset.act, v=el.dataset.val;
+    if(a==='bucket'){S.bucket=+v;render();}
+    else if(a==='go'){S.screen=v;render();}
+    else if(a==='back'){S.screen=(S.screen==='leaf')?'solutions':'home';render();}
+    else if(a==='solview'){S.solView=v;render();}
+    else if(a==='leaf'){S.param=v;S.screen='leaf';render();}
+    else if(a==='step'){el.textContent='We’ll guide you →';el.disabled=true;}
+    else if(a==='sign'){var p=DATA.prospects.find(function(x){return x.id===v;});unlockRow(v,p.cf,function(){S.signed[v]=1;render();});}
+    else if(a==='approve'){var s=DATA.solutions.find(function(x){return x.id===v;});unlockRow(v,s.cf,function(){S.approved[v]=1;render();});}
+  });
+  render();
+})();
+</script>
+</body>
+</html>
