@@ -42,6 +42,10 @@
   .seg{display:inline-flex;background:hsl(240 20% 96%);border:1px solid var(--border);border-radius:99px;padding:3px}
   .seg button{border:none;background:none;border-radius:99px;padding:5px 14px;cursor:pointer;font:inherit;font-size:13px;font-weight:600;color:var(--text-secondary)}
   .seg button[aria-pressed="true"]{background:var(--primary);color:var(--primary-fg)}
+  .payseg{display:flex;gap:6px}
+  .payseg button{flex:1;border:1px solid var(--border-strong);background:var(--surface-2);border-radius:10px;padding:9px 6px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:var(--text-secondary);text-align:center;line-height:1.2;transition:background .12s,border-color .12s,color .12s}
+  .payseg button:hover{border-color:var(--text-muted)}
+  .payseg button[aria-pressed="true"]{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
   .chip{background:hsl(240 20% 97%);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
   .chip .k{font-size:12px;color:var(--text-muted)}
   .chip .v{font-size:16px;font-weight:700;letter-spacing:-.01em}
@@ -91,7 +95,7 @@
        market:10000,discountPct:14,incentive:1500,savings:4500,loan:{termYears:3,aprPct:7.9},lease:null}
     ]
   };
-  var S={screen:'home',bucket:2,solView:'type',param:null,signed:{},approved:{},approvedMode:{},mode:{},unlocked:0};
+  var S={screen:'home',bucket:2,solView:'type',param:null,period:'annual',signed:{},approved:{},approvedMode:{},mode:{},unlocked:0};
   var UL=['Now','Soon','Later'];
   function fmtK(n){n=Math.round(n);var s=n<0?'-':'';n=Math.abs(n);if(n>=1e6)return s+'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e3)return s+'$'+Math.round(n/1e3)+'K';return s+'$'+n;}
   function fmt(n){return '$'+Math.round(n).toLocaleString();}
@@ -107,25 +111,27 @@
   function solModes(s){var m=['cash'];if(s.loan)m.push('loan');if(s.lease)m.push('lease');return m;}
   function curMode(s){var ms=solModes(s);var m=S.mode[s.id]||'cash';return ms.indexOf(m)>=0?m:'cash';}
 
+  function per(x){return S.period==='monthly'?fmt(x/12)+'/mo':fmt(x)+'/yr';}
   function econ(s,mode){
     var sav=s.savings,nt=net(s),pay=payback(s);
     if(mode==='cash'){
-      var five=5*sav-nt, ten=10*sav-nt;
-      return {big:five, takeaway:'Pay '+fmtK(nt)+' now, then keep the savings. Best lifetime return.',
-        chips:[['Net cost today',fmtK(nt)],['Annual savings',fmtK(sav)],['Payback',pay.toFixed(1)+' yrs'],['10-yr net',fmtK(ten)]],
-        series:(function(){var a=[];for(var y=0;y<=10;y++)a.push(-nt+y*sav);return a;})(), be:pay, beLabel:'breaks even at '+pay.toFixed(1)+' yrs'};
+      return {hero:'+'+per(sav), sub:'One-time '+fmt(nt)+' upfront, then it’s yours',
+        chips:[['Upfront (one-time)',fmt(nt)],['Payback',pay.toFixed(1)+' yrs']],
+        series:(function(){var a=[];for(var y=0;y<=10;y++)a.push(-nt+y*sav);return a;})(), be:pay, beLabel:'breaks even at '+pay.toFixed(1)+' yrs',
+        takeaway:'Pay '+fmt(nt)+' once, then keep '+per(sav)+' — best lifetime return.'};
     }
     if(mode==='loan'){
       var m=pmtMo(nt,s.loan.aprPct,s.loan.termYears),ann=m*12,t=s.loan.termYears;
-      var five=5*sav-Math.min(5,t)*ann, ten=10*sav-t*ann, netMo=sav/12-m;
-      return {big:five, takeaway:'$0 down; +'+fmt(netMo)+'/mo from month one. Best near-term cash flow.',
-        chips:[['Upfront','$0 down'],[t+'-yr loan @ '+s.loan.aprPct+'%',fmt(m)+'/mo'],['Net cash flow','+'+fmt(netMo)+'/mo'],['10-yr net',fmtK(ten)]],
-        series:(function(){var a=[0],cum=0;for(var y=1;y<=10;y++){cum+=sav-(y<=t?ann:0);a.push(cum);}return a;})(), be:0.05, beLabel:'cash-flow positive from day one'};
+      return {hero:'+'+per(sav-ann), sub:'$0 down · '+t+'-yr loan @ '+s.loan.aprPct+'%',
+        chips:[['Savings','+'+per(sav)],['Loan payment','−'+per(ann)],['Payback',pay.toFixed(1)+' yrs']],
+        series:(function(){var a=[0],cum=0;for(var y=1;y<=10;y++){cum+=sav-(y<=t?ann:0);a.push(cum);}return a;})(), be:0.05, beLabel:'cash-flow positive from day one',
+        takeaway:'$0 down; you net '+per(sav-ann)+' from day one — best near-term cash flow.'};
     }
-    var la=s.lease.annualAtrium,five=5*(sav-la),ten=10*(sav-la);
-    return {big:five, takeaway:'$0 down; +'+fmtK(sav-la)+'/yr, no ownership or upkeep.',
-      chips:[['Upfront','$0 down'],['Lease',fmtK(la)+'/yr'],['Net cash flow','+'+fmtK(sav-la)+'/yr'],['10-yr net',fmtK(ten)]],
-      series:(function(){var a=[0],cum=0;for(var y=1;y<=10;y++){cum+=sav-la;a.push(cum);}return a;})(), be:0.05, beLabel:'cash-flow positive from year one'};
+    var la=s.lease.annualAtrium,t2=s.lease.termYears;
+    return {hero:'+'+per(sav-la), sub:'$0 down · '+t2+'-yr lease',
+      chips:[['Savings','+'+per(sav)],['Lease cost','−'+per(la)],['Term',t2+' yrs']],
+      series:(function(){var a=[0],cum=0;for(var y=1;y<=10;y++){cum+=sav-la;a.push(cum);}return a;})(), be:0.05, beLabel:'cash-flow positive from year one',
+      takeaway:'$0 down; net '+per(sav-la)+' a year, no ownership or upkeep.'};
   }
   function spark(series,be){
     var w=300,h=72,pad=8,vals=series.concat([0]);
@@ -235,7 +241,8 @@
   // ---- leaf: detailed cost/benefit cards ----
   function solutionCard(s){
     var mode=curMode(s), e=econ(s,mode), ms=solModes(s);
-    var seg=ms.map(function(m){return '<button data-sol="'+s.id+'" data-segmode="'+m+'" aria-pressed="'+(mode===m)+'">'+cap(m)+'</button>';}).join('');
+    var hint={cash:'Buy outright',loan:'Finance',lease:'Rent'};
+    var payseg=ms.map(function(m){return '<button data-sol="'+s.id+'" data-segmode="'+m+'" aria-pressed="'+(mode===m)+'"><span style="display:block">'+cap(m)+'</span><span style="display:block;font-size:11px;font-weight:500;opacity:.85">'+hint[m]+'</span></button>';}).join('');
     var chips=e.chips.map(function(k){return '<div class="chip"><div class="k">'+k[0]+'</div><div class="v">'+k[1]+'</div></div>';}).join('');
     var savePct=Math.round((s.market-price(s))/s.market*100);
     var context=(S.solView==='type'?esc(s.prop):esc(s.type));
@@ -244,15 +251,16 @@
         +'<div><div style="font-size:17px;font-weight:700">'+esc(s.type)+'</div>'
           +'<div style="font-size:13px;color:var(--text-muted);margin-top:2px">'+context+' · <i class="ti ti-tool"></i> '+esc(s.vendor)+' · '+esc(s.install)+'</div></div>'
         +'<span style="font-size:12px;font-weight:600;color:var(--primary);background:hsl(240 60% 96%);border:1px solid hsl(240 40% 90%);border-radius:99px;padding:4px 10px;white-space:nowrap"><i class="ti ti-calendar"></i> Schedule: '+UL[s.u]+'</span></div>'
-      +'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);background:hsl(240 20% 98%);border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:14px">'
-        +'<span style="text-decoration:line-through;color:var(--text-muted)">'+fmtK(s.market)+' market</span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
-        +'<span>'+fmtK(price(s))+' Atrium price <span style="color:var(--text-success);font-weight:600">(−'+savePct+'%)</span></span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
-        +'<span style="color:var(--text-success);font-weight:600">−'+fmtK(s.incentive)+' incentive</span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
-        +'<span style="font-weight:700;color:var(--text-primary)">'+fmtK(net(s))+' your net</span></div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
-        +'<div><div style="font-size:12px;color:var(--text-muted)">5-year net cash flow</div>'
-          +'<div style="font-size:30px;font-weight:700;color:var(--text-success);letter-spacing:-.02em">'+fmtK(e.big)+'</div></div>'
-        +'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-align:right">How you pay</div><div class="seg">'+seg+'</div></div></div>'
+      +'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);background:hsl(240 20% 98%);border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:16px">'
+        +'<span style="text-decoration:line-through;color:var(--text-muted)">'+fmt(s.market)+' market</span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
+        +'<span>'+fmt(price(s))+' Atrium price <span style="color:var(--text-success);font-weight:600">(−'+savePct+'%)</span></span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
+        +'<span style="color:var(--text-success);font-weight:600">−'+fmt(s.incentive)+' incentive</span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
+        +'<span style="font-weight:700;color:var(--text-primary)">'+fmt(net(s))+' your net</span></div>'
+      +'<div style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px">How you’ll pay</div>'
+      +'<div class="payseg" style="margin-bottom:16px">'+payseg+'</div>'
+      +'<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--text-muted)">Net cash flow</div>'
+        +'<div style="font-size:30px;font-weight:700;color:var(--text-success);letter-spacing:-.02em">'+e.hero+'</div>'
+        +'<div style="font-size:13px;color:var(--text-secondary);margin-top:2px">'+e.sub+'</div></div>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px">'+chips+'</div>'
       +'<div style="background:hsl(240 20% 98.5%);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px">'
         +spark(e.series,e.be)
@@ -266,8 +274,9 @@
   }
   function renderLeaf(){
     var live=sols().filter(function(s){return (S.solView==='type'?s.type:s.prop)===S.param;}).sort(recSort);
+    var perToggle='<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-4px 0 14px"><span style="font-size:13px;color:var(--text-muted)">Show amounts:</span><div class="seg"><button data-period="annual" aria-pressed="'+(S.period==='annual')+'">Annual</button><button data-period="monthly" aria-pressed="'+(S.period==='monthly')+'">Monthly</button></div></div>';
     app.innerHTML=header(esc(S.param),'Compare the economics, choose how you pay, then approve each project.')+unlockedBanner()
-      +(live.length?live.map(solutionCard).join('')
+      +(live.length?perToggle+live.map(solutionCard).join('')
         :'<div class="cf-sq" style="text-align:center;padding:2rem"><i class="ti ti-circle-check" style="font-size:26px;color:var(--text-success)" aria-hidden="true"></i><p style="margin:.5rem 0 0">Every project here is approved.</p></div>');
   }
 
@@ -283,13 +292,15 @@
     if(row){row.classList.add('cf-fade');setTimeout(then,340);}else then();
   }
   app.addEventListener('click',function(e){
+    var pertog=e.target.closest('[data-period]');
+    if(pertog){S.period=pertog.dataset.period;render();return;}
     var seg=e.target.closest('[data-segmode]');
     if(seg){var ss=DATA.solutions.find(function(x){return x.id===seg.dataset.sol;});S.mode[ss.id]=seg.dataset.segmode;render();return;}
     var el=e.target.closest('[data-act],[data-approve]'); if(!el)return;
     if(el.dataset.approve){
       var s=DATA.solutions.find(function(x){return x.id===el.dataset.approve;});
       var m=curMode(s);
-      unlockRow(s.id,econ(s,m).big,function(){S.approved[s.id]=1;S.approvedMode[s.id]=m;render();});
+      unlockRow(s.id,fiveCash(s),function(){S.approved[s.id]=1;S.approvedMode[s.id]=m;render();});
       return;
     }
     var a=el.dataset.act, v=el.dataset.val;
