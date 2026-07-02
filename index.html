@@ -188,7 +188,7 @@
     else if(a==='back'){S.screen=(S.screen==='leaf')?'solutions':'home';render();}
     else if(a==='solview'){S.solView=v;render();}
     else if(a==='leaf'){S.param=v;S.screen='leaf';render();}
-    else if(a==='step'){el.textContent='We&rsquo;ll guide you →';el.disabled=true;el.style.opacity=.6;}
+    else if(a==='step'){el.textContent='We’ll guide you →';el.disabled=true;el.style.opacity=.6;}
     else if(a==='sign'){var p=DATA.prospects.find(function(x){return x.id===v;});unlockRow(v,p.cf,function(){S.signed[v]=1;render();});}
     else if(a==='approve'){var s=DATA.solutions.find(function(x){return x.id===v;});unlockRow(v,s.cf,function(){S.approved[v]=1;render();});}
   });
