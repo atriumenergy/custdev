@@ -30,11 +30,21 @@
   .cf-sq:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:var(--border-strong)}
   .cf-sq:disabled{cursor:default;opacity:.75;box-shadow:none;transform:none}
   .cf-amt{font-weight:700;letter-spacing:-.01em}
-  .cf-btn{background:var(--primary);color:var(--primary-fg);border:1px solid var(--primary);border-radius:8px;padding:7px 15px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;transition:filter .12s}
+  .cf-btn{background:var(--primary);color:var(--primary-fg);border:1px solid var(--primary);border-radius:8px;padding:8px 16px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;transition:filter .12s}
   .cf-btn:hover{filter:brightness(1.18)}
   .cf-pill{border:1px solid var(--border-strong);background:var(--surface-2);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit;font-size:14px;font-weight:500;color:var(--text-secondary);transition:background .12s,border-color .12s,color .12s}
   .cf-pill:hover{border-color:var(--text-muted)}
   .cf-pill[aria-pressed="true"]{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+  .ghost{background:none;border:none;color:var(--text-secondary);cursor:pointer;font:inherit;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:4px;padding:6px 4px}
+  .ghost:hover{color:var(--text-primary)}
+  .card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  .approved{background:var(--bg-success);border-color:hsl(86 40% 78%)}
+  .seg{display:inline-flex;background:hsl(240 20% 96%);border:1px solid var(--border);border-radius:99px;padding:3px}
+  .seg button{border:none;background:none;border-radius:99px;padding:5px 14px;cursor:pointer;font:inherit;font-size:13px;font-weight:600;color:var(--text-secondary)}
+  .seg button[aria-pressed="true"]{background:var(--primary);color:var(--primary-fg)}
+  .chip{background:hsl(240 20% 97%);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+  .chip .k{font-size:12px;color:var(--text-muted)}
+  .chip .v{font-size:16px;font-weight:700;letter-spacing:-.01em}
   .cf-fade{animation:cfOut .35s forwards}
   @keyframes cfOut{to{opacity:0;transform:scale(.96);height:0;margin:0;padding:0;border-width:0}}
   a{color:inherit}
@@ -58,27 +68,97 @@
       {id:'p5',name:'Pinewood Inn',cf:70000,ready:false,step:'Add your utility bills',est:true},
       {id:'p6',name:'Bayside Motor Lodge',cf:60000,ready:false,step:'Add your utility bills',est:true}
     ],
+    // Each solution carries real Solution-shaped economics: market/discount/incentive → net,
+    // annual savings, and the pricing options offered (cash always; loan/lease when present).
     solutions:[
-      {id:'s1',prop:'Marina Bay Inn',type:'Solar + Batteries',cf:130000,u:0,note:'Rebate ends Aug 31'},
-      {id:'s5',prop:'Cedar Court Hotel',type:'Solar + Batteries',cf:90000,u:0,note:'Rebate ends Aug 31'},
-      {id:'s8',prop:'Riverside Lodge',type:'Heat Pump Water Heaters',cf:27000,u:0},
-      {id:'s2',prop:'Marina Bay Inn',type:'Heat Pump Water Heaters',cf:38000,u:1},
-      {id:'s9',prop:'Riverside Lodge',type:'Smart Thermostats',cf:44000,u:1},
-      {id:'s6',prop:'Cedar Court Hotel',type:'LED Lighting',cf:34000,u:1},
-      {id:'s7',prop:'Cedar Court Hotel',type:'Ozone Laundry',cf:26000,u:1},
-      {id:'s3',prop:'Marina Bay Inn',type:'LED Lighting',cf:26000,u:2},
-      {id:'s4',prop:'Marina Bay Inn',type:'Smart Thermostats',cf:16000,u:2}
+      {id:'s1',prop:'Marina Bay Inn',type:'Solar + Batteries',u:0,note:'Rebate ends Aug 31',vendor:'GreenVolt Partners',install:'~6 weeks · starts Sep',
+       market:430000,discountPct:12,incentive:130000,savings:75000,loan:{termYears:10,aprPct:6.5},lease:{annualAtrium:44000,annualMarket:52000,termYears:20}},
+      {id:'s5',prop:'Cedar Court Hotel',type:'Solar + Batteries',u:0,note:'Rebate ends Aug 31',vendor:'GreenVolt Partners',install:'~5 weeks',
+       market:300000,discountPct:12,incentive:90000,savings:53000,loan:{termYears:10,aprPct:6.5},lease:{annualAtrium:31000,annualMarket:37000,termYears:20}},
+      {id:'s8',prop:'Riverside Lodge',type:'Heat Pump Water Heaters',u:0,vendor:'Thermal Systems',install:'~2 weeks',
+       market:52000,discountPct:12,incentive:12000,savings:12000,loan:{termYears:7,aprPct:6.9},lease:null},
+      {id:'s2',prop:'Marina Bay Inn',type:'Heat Pump Water Heaters',u:1,vendor:'Thermal Systems',install:'~2 weeks',
+       market:72000,discountPct:12,incentive:15000,savings:17000,loan:{termYears:7,aprPct:6.9},lease:null},
+      {id:'s9',prop:'Riverside Lodge',type:'Smart Thermostats',u:1,vendor:'Cozy Controls',install:'~1 week',
+       market:28000,discountPct:14,incentive:4000,savings:12500,loan:{termYears:3,aprPct:7.9},lease:null},
+      {id:'s6',prop:'Cedar Court Hotel',type:'LED Lighting',u:1,vendor:'BrightSwap',install:'~2 weeks',
+       market:46000,discountPct:13,incentive:6000,savings:13500,loan:{termYears:3,aprPct:7.9},lease:null},
+      {id:'s7',prop:'Cedar Court Hotel',type:'Ozone Laundry',u:1,vendor:'PureWash',install:'~1 week',
+       market:30000,discountPct:13,incentive:3000,savings:10000,loan:{termYears:3,aprPct:7.9},lease:null},
+      {id:'s3',prop:'Marina Bay Inn',type:'LED Lighting',u:2,vendor:'BrightSwap',install:'~2 weeks',
+       market:34000,discountPct:13,incentive:4000,savings:10000,loan:{termYears:3,aprPct:7.9},lease:null},
+      {id:'s4',prop:'Marina Bay Inn',type:'Smart Thermostats',u:2,vendor:'Cozy Controls',install:'~1 week',
+       market:10000,discountPct:14,incentive:1500,savings:4500,loan:{termYears:3,aprPct:7.9},lease:null}
     ]
   };
-  var S={screen:'home',bucket:2,solView:'type',param:null,signed:{},approved:{},unlocked:0};
+  var S={screen:'home',bucket:2,solView:'type',param:null,signed:{},approved:{},approvedMode:{},mode:{},unlocked:0};
   var UL=['Now','Soon','Later'];
-  function fmtK(n){n=Math.round(n);if(n>=1e6)return '$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e3)return '$'+Math.round(n/1e3)+'K';return '$'+n;}
+  function fmtK(n){n=Math.round(n);var s=n<0?'-':'';n=Math.abs(n);if(n>=1e6)return s+'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(n>=1e3)return s+'$'+Math.round(n/1e3)+'K';return s+'$'+n;}
   function fmt(n){return '$'+Math.round(n).toLocaleString();}
+  function cap(s){return s[0].toUpperCase()+s.slice(1);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function pmtMo(P,aprPct,termY){var r=aprPct/100/12,n=termY*12;return P*r/(1-Math.pow(1+r,-n));}
+
+  // ---- solution economics ----
+  function price(s){return Math.round(s.market*(1-s.discountPct/100));}
+  function net(s){return price(s)-s.incentive;}
+  function payback(s){return net(s)/s.savings;}
+  function fiveCash(s){return 5*s.savings-net(s);}           // cash 5-yr net — the tile number
+  function solModes(s){var m=['cash'];if(s.loan)m.push('loan');if(s.lease)m.push('lease');return m;}
+  function curMode(s){var ms=solModes(s);var m=S.mode[s.id]||'cash';return ms.indexOf(m)>=0?m:'cash';}
+
+  function econ(s,mode){
+    var sav=s.savings,nt=net(s),pay=payback(s);
+    if(mode==='cash'){
+      var five=5*sav-nt, ten=10*sav-nt;
+      return {big:five, takeaway:'Pay '+fmtK(nt)+' now, then keep the savings. Best lifetime return.',
+        chips:[['Net cost today',fmtK(nt)],['Annual savings',fmtK(sav)],['Payback',pay.toFixed(1)+' yrs'],['10-yr net',fmtK(ten)]],
+        series:(function(){var a=[];for(var y=0;y<=10;y++)a.push(-nt+y*sav);return a;})(), be:pay, beLabel:'breaks even at '+pay.toFixed(1)+' yrs'};
+    }
+    if(mode==='loan'){
+      var m=pmtMo(nt,s.loan.aprPct,s.loan.termYears),ann=m*12,t=s.loan.termYears;
+      var five=5*sav-Math.min(5,t)*ann, ten=10*sav-t*ann, netMo=sav/12-m;
+      return {big:five, takeaway:'$0 down; +'+fmt(netMo)+'/mo from month one. Best near-term cash flow.',
+        chips:[['Upfront','$0 down'],[t+'-yr loan @ '+s.loan.aprPct+'%',fmt(m)+'/mo'],['Net cash flow','+'+fmt(netMo)+'/mo'],['10-yr net',fmtK(ten)]],
+        series:(function(){var a=[0],cum=0;for(var y=1;y<=10;y++){cum+=sav-(y<=t?ann:0);a.push(cum);}return a;})(), be:0.05, beLabel:'cash-flow positive from day one'};
+    }
+    var la=s.lease.annualAtrium,five=5*(sav-la),ten=10*(sav-la);
+    return {big:five, takeaway:'$0 down; +'+fmtK(sav-la)+'/yr, no ownership or upkeep.',
+      chips:[['Upfront','$0 down'],['Lease',fmtK(la)+'/yr'],['Net cash flow','+'+fmtK(sav-la)+'/yr'],['10-yr net',fmtK(ten)]],
+      series:(function(){var a=[0],cum=0;for(var y=1;y<=10;y++){cum+=sav-la;a.push(cum);}return a;})(), be:0.05, beLabel:'cash-flow positive from year one'};
+  }
+  function spark(series,be){
+    var w=300,h=72,pad=8,vals=series.concat([0]);
+    var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),sp=(mx-mn)||1;
+    function X(y){return pad+(y/10)*(w-2*pad);}
+    function Y(v){return pad+(1-(v-mn)/sp)*(h-2*pad);}
+    var pts=series.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
+    var area=pts+' '+X(10).toFixed(1)+','+Y(mn).toFixed(1)+' '+X(0).toFixed(1)+','+Y(mn).toFixed(1);
+    return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" style="display:block">'
+      +'<polygon points="'+area+'" fill="hsl(86 45% 95%)"/>'
+      +'<line x1="'+pad+'" x2="'+(w-pad)+'" y1="'+Y(0).toFixed(1)+'" y2="'+Y(0).toFixed(1)+'" stroke="var(--border-strong)" stroke-dasharray="3 3"/>'
+      +'<polyline points="'+pts+'" fill="none" stroke="var(--text-success)" stroke-width="2.5"/>'
+      +'<circle cx="'+X(be).toFixed(1)+'" cy="'+Y(0).toFixed(1)+'" r="3.5" fill="var(--primary)"/></svg>';
+  }
+
+  // ---- collections ----
   function prospects(){return DATA.prospects.filter(function(p){return !S.signed[p.id];});}
   function sols(){return DATA.solutions.filter(function(s){return !S.approved[s.id];});}
-  function sum(a){return a.reduce(function(t,x){return t+x.cf;},0);}
-  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function sumCf(a){return a.reduce(function(t,x){return t+x.cf;},0);}
+  function sumFive(a){return a.reduce(function(t,x){return t+fiveCash(x);},0);}
+  function recSort(a,b){ if(a.u!==b.u)return a.u-b.u; if((!!b.note)!==(!!a.note))return (b.note?1:0)-(a.note?1:0); return fiveCash(b)-fiveCash(a); }
 
+  // ---- shared bits ----
+  function unlockedBanner(){
+    if(!S.unlocked)return '';
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-success);border:1px solid hsl(86 40% 82%);border-radius:var(--radius);padding:9px 13px;margin-bottom:1rem;font-size:14px;color:var(--text-success)"><i class="ti ti-sparkles" aria-hidden="true"></i>Unlocked this session: <span style="font-weight:700">'+fmt(S.unlocked)+'</span> over 5 years</div>';
+  }
+  function header(title,sub){
+    return '<div style="margin-bottom:1.25rem"><button class="cf-pill" data-act="back" style="margin-bottom:14px;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>'
+      +'<h1 style="margin:0">'+title+'</h1>'+(sub?'<p style="color:var(--text-secondary);margin:.3rem 0 0">'+sub+'</p>':'')+'</div>';
+  }
+
+  // ---- home ----
   function homeSquare(icon,label,sub,foot,amt,act,val){
     return '<button class="cf-sq" data-act="'+act+'" data-val="'+(val||'')+'" style="display:flex;flex-direction:column;gap:6px;min-height:158px">'
       +'<span style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:14px;font-weight:500"><i class="ti '+icon+'" aria-hidden="true" style="font-size:18px;color:var(--primary)"></i>'+label+'</span>'
@@ -86,23 +166,15 @@
       +'<span style="font-size:14px;color:var(--text-secondary)">'+sub+'</span>'
       +'<span style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;color:var(--text-muted);font-size:13px">'+foot+'<i class="ti ti-arrow-right" aria-hidden="true"></i></span></button>';
   }
-  function unlockedBanner(){
-    if(!S.unlocked)return '';
-    return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-success);border:1px solid hsl(86 40% 82%);border-radius:var(--radius);padding:9px 13px;margin-bottom:1rem;font-size:14px;color:var(--text-success)"><i class="ti ti-sparkles" aria-hidden="true"></i>Unlocked this session: <span style="font-weight:700">'+fmt(S.unlocked)+'</span> over 5 years</div>';
-  }
   function bucketPills(){
     var opts=[[1,'None signed'],[2,'Some signed'],[3,'All signed']];
     return '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center">'
       +'<span style="font-size:13px;color:var(--text-muted);margin-right:2px">Preview portfolio:</span>'
       +opts.map(function(o){return '<button class="cf-pill" data-act="bucket" data-val="'+o[0]+'" aria-pressed="'+(S.bucket===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
   }
-  function header(title,sub){
-    return '<div style="margin-bottom:1.25rem"><button class="cf-pill" data-act="back" style="margin-bottom:14px;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>'
-      +'<h1 style="margin:0">'+title+'</h1>'+(sub?'<p style="color:var(--text-secondary);margin:.3rem 0 0">'+sub+'</p>':'')+'</div>';
-  }
   function renderHome(){
     var showSign=S.bucket!==3, showApprove=S.bucket!==1;
-    var st=sum(prospects()), at=sum(sols());
+    var st=sumCf(prospects()), at=sumFive(sols());
     var total=(showSign?st:0)+(showApprove?at:0);
     var sq=[];
     if(showSign) sq.push(prospects().length?homeSquare('ti-building-community','Sign up your properties',prospects().length+' properties ready','5-year new cash flow',fmtK(st),'go','signup')
@@ -117,6 +189,8 @@
       +unlockedBanner()
       +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px">'+sq.join('')+'</div>';
   }
+
+  // ---- signup ----
   function propRow(p){
     var cta=p.ready?'<button class="cf-btn" data-act="sign" data-val="'+p.id+'">Approve &amp; sign</button>'
       :'<button class="cf-pill" data-act="step" data-val="'+p.id+'">'+p.step+'</button>';
@@ -127,18 +201,19 @@
   }
   function renderSignup(){
     var list=prospects();
-    app.innerHTML=header('Sign up your properties','Each property&rsquo;s 5-year new cash flow once it&rsquo;s saving with Atrium.')+unlockedBanner()
+    app.innerHTML=header('Sign up your properties','Each property’s 5-year new cash flow once it’s saving with Atrium.')+unlockedBanner()
       +(list.length?'<div style="display:flex;flex-direction:column;gap:10px">'+list.map(propRow).join('')+'</div>'
         :'<div class="cf-sq" style="text-align:center;padding:2rem"><i class="ti ti-circle-check" style="font-size:26px;color:var(--text-success)" aria-hidden="true"></i><p style="margin:.5rem 0 0">Every property is signed up.</p></div>');
   }
-  function recSort(a,b){ if(a.u!==b.u)return a.u-b.u; if((!!b.note)!==(!!a.note))return (b.note?1:0)-(a.note?1:0); return b.cf-a.cf; }
+
+  // ---- solutions grid ----
   function renderSolutions(){
     var live=sols();
     var groups={};
     live.forEach(function(s){var k=S.solView==='type'?s.type:s.prop;(groups[k]=groups[k]||[]).push(s);});
     var keys=Object.keys(groups).sort(function(a,b){
       if(S.solView==='type'){var ga=groups[a].slice().sort(recSort)[0],gb=groups[b].slice().sort(recSort)[0];var r=recSort(ga,gb);if(r)return r;}
-      return sum(groups[b])-sum(groups[a]);
+      return sumFive(groups[b])-sumFive(groups[a]);
     });
     var toggle='<div style="display:flex;gap:6px;margin-bottom:1rem">'
       +'<button class="cf-pill" data-act="solview" data-val="type" aria-pressed="'+(S.solView==='type')+'">By solution type</button>'
@@ -146,42 +221,77 @@
     var grid=keys.map(function(k){
       var g=groups[k], soonest=g.slice().sort(recSort)[0];
       var tag=soonest.note?'<span style="display:inline-flex;align-items:center;gap:4px;color:var(--text-warning);font-size:13px;font-weight:500"><i class="ti ti-clock" aria-hidden="true"></i>'+esc(soonest.note)+'</span>'
-        :'<span style="color:var(--text-muted);font-size:13px">'+UL[soonest.u]+' · '+g.length+' solution'+(g.length>1?'s':'')+'</span>';
+        :'<span style="color:var(--text-muted);font-size:13px">'+UL[soonest.u]+' · '+g.length+' project'+(g.length>1?'s':'')+'</span>';
       return '<button class="cf-sq" data-act="leaf" data-val="'+esc(k)+'" style="display:flex;flex-direction:column;gap:6px;min-height:122px">'
         +'<span style="font-size:15px;font-weight:600">'+esc(k)+'</span>'
-        +'<span class="cf-amt" style="font-size:23px;color:var(--text-success)">'+fmtK(sum(g))+'</span>'
+        +'<span class="cf-amt" style="font-size:23px;color:var(--text-success)">'+fmtK(sumFive(g))+'</span>'
         +'<span style="margin-top:auto;display:flex;justify-content:space-between;align-items:center">'+tag+'<i class="ti ti-arrow-right" style="color:var(--text-muted)" aria-hidden="true"></i></span></button>';
     }).join('');
-    app.innerHTML=header('Approve proposed solutions','Sorted by what pays back soonest and biggest.')+unlockedBanner()+toggle
+    app.innerHTML=header('Approve proposed solutions','Grouped by '+(S.solView==='type'?'solution type':'property')+', soonest and biggest first. Open one to compare the economics.')+unlockedBanner()+toggle
       +(keys.length?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px">'+grid+'</div>'
         :'<div class="cf-sq" style="text-align:center;padding:2rem"><i class="ti ti-circle-check" style="font-size:26px;color:var(--text-success)" aria-hidden="true"></i><p style="margin:.5rem 0 0">Every proposed solution is approved.</p></div>');
   }
-  function renderLeaf(){
-    var live=sols().filter(function(s){return (S.solView==='type'?s.type:s.prop)===S.param;});
-    var rows=live.sort(recSort).map(function(s){
-      var meta=S.solView==='type'?esc(s.prop):esc(s.type);
-      var tag=s.note?'<span style="color:var(--text-warning);font-weight:500"><i class="ti ti-clock" aria-hidden="true"></i> '+esc(s.note)+'</span>':UL[s.u];
-      return '<div data-row="'+s.id+'" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)">'
-        +'<div style="min-width:0"><p style="margin:0;font-weight:600">'+meta+'</p><p style="margin:.15rem 0 0;font-size:13px;color:var(--text-muted)">'+tag+'</p></div>'
-        +'<div style="text-align:right;flex-shrink:0"><div class="cf-amt" style="font-size:19px;color:var(--text-success)">'+fmtK(s.cf)+'</div>'
-        +'<button class="cf-btn" data-act="approve" data-val="'+s.id+'" style="margin-top:7px">Approve</button></div></div>';
-    }).join('');
-    app.innerHTML=header(esc(S.param),'5-year new cash flow per solution.')+unlockedBanner()
-      +(live.length?'<div style="display:flex;flex-direction:column;gap:10px">'+rows+'</div>':'<p style="color:var(--text-secondary)">All approved here.</p>');
+
+  // ---- leaf: detailed cost/benefit cards ----
+  function solutionCard(s){
+    var mode=curMode(s), e=econ(s,mode), ms=solModes(s);
+    var seg=ms.map(function(m){return '<button data-sol="'+s.id+'" data-segmode="'+m+'" aria-pressed="'+(mode===m)+'">'+cap(m)+'</button>';}).join('');
+    var chips=e.chips.map(function(k){return '<div class="chip"><div class="k">'+k[0]+'</div><div class="v">'+k[1]+'</div></div>';}).join('');
+    var savePct=Math.round((s.market-price(s))/s.market*100);
+    var context=(S.solView==='type'?esc(s.prop):esc(s.type));
+    return '<div class="card" data-row="'+s.id+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px">'
+        +'<div><div style="font-size:17px;font-weight:700">'+esc(s.type)+'</div>'
+          +'<div style="font-size:13px;color:var(--text-muted);margin-top:2px">'+context+' · <i class="ti ti-tool"></i> '+esc(s.vendor)+' · '+esc(s.install)+'</div></div>'
+        +'<span style="font-size:12px;font-weight:600;color:var(--primary);background:hsl(240 60% 96%);border:1px solid hsl(240 40% 90%);border-radius:99px;padding:4px 10px;white-space:nowrap"><i class="ti ti-calendar"></i> Schedule: '+UL[s.u]+'</span></div>'
+      +'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);background:hsl(240 20% 98%);border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:14px">'
+        +'<span style="text-decoration:line-through;color:var(--text-muted)">'+fmtK(s.market)+' market</span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
+        +'<span>'+fmtK(price(s))+' Atrium price <span style="color:var(--text-success);font-weight:600">(−'+savePct+'%)</span></span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
+        +'<span style="color:var(--text-success);font-weight:600">−'+fmtK(s.incentive)+' incentive</span><i class="ti ti-arrow-right" style="color:var(--text-muted)"></i>'
+        +'<span style="font-weight:700;color:var(--text-primary)">'+fmtK(net(s))+' your net</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
+        +'<div><div style="font-size:12px;color:var(--text-muted)">5-year net cash flow</div>'
+          +'<div style="font-size:30px;font-weight:700;color:var(--text-success);letter-spacing:-.02em">'+fmtK(e.big)+'</div></div>'
+        +'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-align:right">How you pay</div><div class="seg">'+seg+'</div></div></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px">'+chips+'</div>'
+      +'<div style="background:hsl(240 20% 98.5%);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px">'
+        +spark(e.series,e.be)
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:2px"><span>Now</span><span>'+e.beLabel+'</span><span>10 yrs</span></div></div>'
+      +'<div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px"><i class="ti ti-bulb" style="color:var(--text-warning)"></i> '+e.takeaway+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+        +'<button class="cf-btn" data-approve="'+s.id+'"><i class="ti ti-check"></i> Approve with '+cap(mode)+'</button>'
+        +'<button class="ghost"><i class="ti ti-file-text"></i> View full quote</button>'
+        +'<button class="ghost"><i class="ti ti-message"></i> Ask a question</button></div>'
+    +'</div>';
   }
+  function renderLeaf(){
+    var live=sols().filter(function(s){return (S.solView==='type'?s.type:s.prop)===S.param;}).sort(recSort);
+    app.innerHTML=header(esc(S.param),'Compare the economics, choose how you pay, then approve each project.')+unlockedBanner()
+      +(live.length?live.map(solutionCard).join('')
+        :'<div class="cf-sq" style="text-align:center;padding:2rem"><i class="ti ti-circle-check" style="font-size:26px;color:var(--text-success)" aria-hidden="true"></i><p style="margin:.5rem 0 0">Every project here is approved.</p></div>');
+  }
+
   function render(){
     if(S.screen==='home')renderHome();
     else if(S.screen==='signup')renderSignup();
     else if(S.screen==='solutions')renderSolutions();
     else if(S.screen==='leaf')renderLeaf();
   }
-  function unlockRow(id,cf,then){
+  function unlockRow(id,amt,then){
     var row=app.querySelector('[data-row="'+id+'"]');
-    S.unlocked+=cf;
+    S.unlocked+=amt;
     if(row){row.classList.add('cf-fade');setTimeout(then,340);}else then();
   }
   app.addEventListener('click',function(e){
-    var el=e.target.closest('[data-act]'); if(!el)return;
+    var seg=e.target.closest('[data-segmode]');
+    if(seg){var ss=DATA.solutions.find(function(x){return x.id===seg.dataset.sol;});S.mode[ss.id]=seg.dataset.segmode;render();return;}
+    var el=e.target.closest('[data-act],[data-approve]'); if(!el)return;
+    if(el.dataset.approve){
+      var s=DATA.solutions.find(function(x){return x.id===el.dataset.approve;});
+      var m=curMode(s);
+      unlockRow(s.id,econ(s,m).big,function(){S.approved[s.id]=1;S.approvedMode[s.id]=m;render();});
+      return;
+    }
     var a=el.dataset.act, v=el.dataset.val;
     if(a==='bucket'){S.bucket=+v;render();}
     else if(a==='go'){S.screen=v;render();}
@@ -190,7 +300,6 @@
     else if(a==='leaf'){S.param=v;S.screen='leaf';render();}
     else if(a==='step'){el.textContent='We’ll guide you →';el.disabled=true;el.style.opacity=.6;}
     else if(a==='sign'){var p=DATA.prospects.find(function(x){return x.id===v;});unlockRow(v,p.cf,function(){S.signed[v]=1;render();});}
-    else if(a==='approve'){var s=DATA.solutions.find(function(x){return x.id===v;});unlockRow(v,s.cf,function(){S.approved[v]=1;render();});}
   });
   render();
 })();
